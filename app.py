@@ -62,11 +62,7 @@ th, td { padding: 8px; text-align: left; }
 </div>
 
 <script>
-// =========================
-// URL da API no Render
-// =========================
-const API_URL = "https://sprint-python-7.onrender.com";
-
+const API_URL = "https://sprint-python-7.onrender.com"; // <<< URL da API atualizada
 let lembretes = [];
 let notificacoesDisparadas = {};
 let alertaFixo = null;
@@ -172,6 +168,7 @@ async function cancelarConsulta(cpf, id) {
 // =========================
 // Observações (mantidas)
 // =========================
+// ... (mesmo conteúdo da sua versão anterior, sem alteração)
 
 // =========================
 // Lembretes + Alerta fixo
