@@ -1,9 +1,13 @@
-# usuario_api.py - API Flask com consultas e observações
+# app.py — API Flask com consultas e observações + página inicial
+
 import oracledb
 from datetime import datetime, date
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
+# ==============================
+# Inicialização do Flask
+# ==============================
 app = Flask(__name__)
 CORS(app)  # Permite acesso do front-end local
 
@@ -44,8 +48,8 @@ def listar_proximas_consultas_db(cpf):
             WHERE cpf_paciente = :cpf
             ORDER BY 
                 CASE 
-                    WHEN data_consulta >= SYSDATE THEN 0  -- Consultas futuras primeiro
-                    ELSE 1                                -- Depois as passadas
+                    WHEN data_consulta >= SYSDATE THEN 0
+                    ELSE 1
                 END,
                 data_consulta ASC
         """, {'cpf': cpf})
@@ -161,7 +165,7 @@ def excluir_observacao_db(cpf, id_obs):
 
 
 # ==============================
-# Endpoints Flask
+# Rotas da API Flask
 # ==============================
 @app.route("/consultas/<cpf>", methods=["GET"])
 def api_listar_consultas(cpf):
@@ -212,7 +216,10 @@ def api_cancelar_presenca():
 @app.route("/observacoes/<cpf>", methods=["GET"])
 def api_listar_observacoes(cpf):
     obs = listar_observacoes_db(cpf)
-    result = [{"id_obs": o[0], "id_consulta": o[1], "descricao": o[2], "data": o[3]} for o in obs]
+    result = [
+        {"id_obs": o[0], "id_consulta": o[1], "descricao": o[2], "data": o[3]}
+        for o in obs
+    ]
     return jsonify(result)
 
 
@@ -238,7 +245,15 @@ def api_excluir_observacao():
 
 
 # ==============================
-# Rodar Flask
+# Página Inicial (index.html)
+# ==============================
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+# ==============================
+# Executar Flask
 # ==============================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
