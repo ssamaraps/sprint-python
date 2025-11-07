@@ -1,6 +1,4 @@
 flask-cors
 oracledb
 flask
-pandas
-scikit-learn
 gunicorn
