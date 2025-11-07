@@ -1,5 +1,6 @@
-flask
-gunicorn
+
 oracledb
+flask
 pandas
-pickle5
+scikit-learn
+gunicorn
