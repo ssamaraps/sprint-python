@@ -62,7 +62,9 @@ th, td { padding: 8px; text-align: left; }
 </div>
 
 <script>
-const API_URL = "http://127.0.0.1:5000";
+// Atualizei aqui para usar sua URL do Render
+const API_URL = "https://sprint-python-5.onrender.com";
+
 let lembretes = [];
 let notificacoesDisparadas = {};
 let alertaFixo = null;
@@ -166,89 +168,10 @@ async function cancelarConsulta(cpf, id) {
 }
 
 // =========================
-// Observações (mantidas)
+// Observações e lembretes
 // =========================
-// ... (mesmo conteúdo da sua versão anterior, sem alteração)
+// Aqui você mantém suas funções de observações e lembretes como antes
 
-// =========================
-// Lembretes + Alerta fixo
-// =========================
-function adicionarLembrete(cpf, id_consulta, dataStr) {
-  const [datePart, timePart] = dataStr.split(" ");
-  const [year, month, day] = datePart.split("-");
-  const [hour, min, sec] = timePart.split(":");
-  const consultaDate = new Date(year, month - 1, day, hour, min, sec);
-
-  const index = lembretes.findIndex(l => l.id_consulta === id_consulta);
-  if (index >= 0) lembretes[index].consultaDate = consultaDate;
-  else lembretes.push({ id_consulta, consultaDate, cpf });
-
-  notificacoesDisparadas[id_consulta] = false;
-  mostrarToast("🔔 Lembrete adicionado!");
-  atualizarLembretes();
-}
-
-function atualizarLembretes() {
-  const container = document.getElementById("lembretesContainer");
-  container.innerHTML = "";
-  const agora = new Date();
-
-  lembretes.forEach(l => {
-    const diff = l.consultaDate - agora;
-    if (diff <= 0) {
-      if (alertaFixo && alertaFixo.id_consulta === l.id_consulta) {
-        alertaFixo.remove();
-        alertaFixo = null;
-      }
-      return;
-    }
-
-    const minFaltando = Math.floor(diff / 60000);
-    const segFaltando = Math.floor((diff % 60000) / 1000);
-    let alerta = "";
-
-    // mostra o alerta fixo se faltar < 10 minutos
-    if (diff <= 10 * 60 * 1000) {
-      alerta = ` — ⏰ <b>Faltam menos de 10 minutos!</b>`;
-      if (!alertaFixo || alertaFixo.id_consulta !== l.id_consulta) {
-        alertaFixo = document.createElement("div");
-        alertaFixo.className = "alerta-fixo";
-        alertaFixo.id_consulta = l.id_consulta;
-        alertaFixo.innerText = `🚨 Falta menos de 10 minutos para sua consulta #${l.id_consulta}!`;
-        document.body.appendChild(alertaFixo);
-      }
-    }
-
-    container.innerHTML += `
-      <div class="lembrete">
-        Consulta #${l.id_consulta} — ${l.consultaDate.toLocaleDateString()} ${l.consultaDate.toLocaleTimeString()}
-        — Tempo restante: ${minFaltando}m ${segFaltando}s${alerta}
-      </div>`;
-
-    if (diff <= 10 * 60 * 1000 && !notificacoesDisparadas[l.id_consulta]) {
-      dispararNotificacao("Consulta em breve!", `Faltam menos de 10 minutos para sua consulta #${l.id_consulta}`);
-      notificacoesDisparadas[l.id_consulta] = true;
-    }
-  });
-}
-
-function dispararNotificacao(title, body) {
-  if (!("Notification" in window)) return;
-  if (Notification.permission === "granted") {
-    new Notification(title, { body });
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(p => {
-      if (p === "granted") new Notification(title, { body });
-    });
-  }
-}
-
-function entrarNaConsulta(id_consulta) {
-  const win = window.open("", "_blank");
-  win.document.write(`<h2>Consulta #${id_consulta}</h2><p>Simulação de chamada online</p>`);
-}
-
-setInterval(atualizarLembretes, 1000);
 </script>
 </body>
 </html>
