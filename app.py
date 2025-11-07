@@ -1,5 +1,5 @@
 # ==============================================================
-# 🏥 Assistente Virtual HC - API Flask
+# 🏥 Assistente Virtual HC - API Flask (versão corrigida)
 # ==============================================================
 
 from flask import Flask, request, jsonify, render_template
@@ -12,7 +12,6 @@ from datetime import datetime
 # ==============================================================
 app = Flask(__name__)
 CORS(app)
-
 
 # ==============================================================
 # 2️⃣ Conexão com o Banco Oracle
@@ -28,14 +27,12 @@ def getConnection():
         print("❌ Erro ao conectar no Oracle:", e)
         raise
 
-
 # ==============================================================
 # 3️⃣ Página inicial (Render vai usar isso)
 # ==============================================================
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 # ==============================================================
 # 4️⃣ Funções auxiliares de banco
@@ -52,7 +49,7 @@ def listar_proximas_consultas_db(cpf):
         WHERE cpf_paciente = :cpf
         ORDER BY data_consulta
     """
-    cursor.execute(query, [cpf])
+    cursor.execute(query, {"cpf": cpf})  # ✅ uso correto de bind nomeado
     result = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -67,7 +64,7 @@ def confirmar_consulta_db(cpf, id_consulta):
         SET presenca = 'Confirmada'
         WHERE cpf_paciente = :cpf AND id_consulta = :id
     """
-    cursor.execute(query, [cpf, id_consulta])
+    cursor.execute(query, {"cpf": cpf, "id": id_consulta})  # ✅ binds nomeados
     conn.commit()
     cursor.close()
     conn.close()
@@ -81,7 +78,7 @@ def cancelar_consulta_db(cpf, id_consulta):
         SET presenca = 'Cancelada'
         WHERE cpf_paciente = :cpf AND id_consulta = :id
     """
-    cursor.execute(query, [cpf, id_consulta])
+    cursor.execute(query, {"cpf": cpf, "id": id_consulta})  # ✅ binds nomeados
     conn.commit()
     cursor.close()
     conn.close()
@@ -96,7 +93,7 @@ def listar_observacoes_db(cpf, id_consulta):
         WHERE cpf_paciente = :cpf AND id_consulta = :id
         ORDER BY data_obs DESC
     """
-    cursor.execute(query, [cpf, id_consulta])
+    cursor.execute(query, {"cpf": cpf, "id": id_consulta})  # ✅ binds nomeados
     result = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -110,11 +107,10 @@ def adicionar_observacao_db(cpf, id_consulta, texto):
         INSERT INTO observacoes (id_obs, cpf_paciente, id_consulta, texto_observacao, data_obs)
         VALUES (obs_seq.NEXTVAL, :cpf, :id, :texto, SYSDATE)
     """
-    cursor.execute(query, [cpf, id_consulta, texto])
+    cursor.execute(query, {"cpf": cpf, "id": id_consulta, "texto": texto})  # ✅ binds nomeados
     conn.commit()
     cursor.close()
     conn.close()
-
 
 # ==============================================================
 # 5️⃣ Rotas da API
@@ -125,6 +121,10 @@ def adicionar_observacao_db(cpf, id_consulta, texto):
 def api_listar_consultas(cpf):
     try:
         consultas = listar_proximas_consultas_db(cpf)
+        if not consultas:
+            print(f"⚠️ Nenhuma consulta encontrada para o CPF {cpf}")
+            return jsonify([])
+
         consultas_json = [
             {
                 "id": c[0],
@@ -134,6 +134,7 @@ def api_listar_consultas(cpf):
             }
             for c in consultas
         ]
+        print(f"✅ {len(consultas_json)} consultas retornadas para o CPF {cpf}")
         return jsonify(consultas_json)
     except Exception as e:
         print("❌ Erro ao buscar consultas:", e)
@@ -169,9 +170,7 @@ def api_cancelar_consulta():
 def api_listar_observacoes(cpf, id_consulta):
     try:
         obs = listar_observacoes_db(cpf, id_consulta)
-        obs_json = [
-            {"texto": o[0], "data": o[1]} for o in obs
-        ]
+        obs_json = [{"texto": o[0], "data": o[1]} for o in obs]
         return jsonify(obs_json)
     except Exception as e:
         print("❌ Erro ao buscar observações:", e)
