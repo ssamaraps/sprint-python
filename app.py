@@ -236,6 +236,9 @@ def api_excluir_observacao():
     success = excluir_observacao_db(data["cpf"], data["id_obs"])
     return jsonify({"success": success})
 
+@app.route("/", methods=["GET"])
+def home():
+    return "API está online!"
 
 # ==============================
 # Rodar Flask
