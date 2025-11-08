@@ -19,6 +19,8 @@ CORS(app)
 def getConnection():
     try:
     return oracledb.connect(
+        user="rm559072",
+        password="130106",
         host="oracle.fiap.com.br",
         port=1521,
         service_name="orcl"
